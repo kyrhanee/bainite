@@ -44,7 +44,7 @@ Latest binaries: **[Releases](../../releases/latest)**.
 
 | file                  | size     | what                          |
 | --------------------- | -------: | ----------------------------- |
-| `bainite.exe`         | 1.41 MiB | command-line packer           |
+| `bainite.exe`         | 1.43 MiB | command-line packer           |
 | `bainited.exe`        | 3.49 MiB | REST + gRPC daemon            |
 | `bainite_native.dll`  | 870 KiB  | C ABI shared library          |
 | `bainite.h`           |   2 KiB  | C header                      |
