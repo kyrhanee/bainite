@@ -6,40 +6,43 @@
 /_.___/\__,_/_/_/ /_/_/\__/\___/
 ```
 
-A one-way executable packer for Windows PE.
+A modern executable packer for Windows PE. Compresses your `.exe` with LZMA2
+at extreme settings and a BCJ x86 filter, then ships it as a single self-running
+binary with a 16 KiB runtime.
 
-`bainite` shrinks Windows EXEs further than UPX on real-world binaries. It uses
-LZMA2 at extreme settings, a BCJ x86 filter, and an in-memory runtime — no
-temporary files, no `CreateProcess`.
+## what you get
 
-> **One-way.** It compresses; it does not extract. There is no `unpack`
-> command, no `unpack` endpoint, no FFI to recover the original bytes. Only
-> the embedded runtime stub can decompress in memory to execute. Your code
-> stays your code.
+- **Heavy compression.** LZMA2 preset 9 with `nice_len=273` and `depth=999`,
+  combined with a BCJ x86 preprocessor that converts relative `call`/`jmp`
+  offsets to absolute targets so the entropy coder finds longer matches.
+- **In-memory runtime.** The packed binary maps the original image directly
+  into the current process — sections, relocations, imports, page protections,
+  TLS callbacks, jump to OEP. No temp files, no `CreateProcess`, no extra disk
+  I/O after the first read.
+- **Tiny stub.** 16 KiB. On binaries of 5 MiB and up the overhead is invisible.
+- **Adaptive strategy.** `--algo auto` benchmarks Zstd and LZMA2 for the input
+  and picks whichever produces the smaller payload.
+- **Optional ChaCha20** over the compressed payload for opaque distribution.
+- **Three integration modes.** Command-line tool, REST + gRPC daemon, C ABI
+  shared library — embed from any language with FFI.
+- **Wide PE support.** Handles standard executables and native-subsystem
+  images (drivers, kernel components).
 
-## benchmarks vs UPX 4.2.4
-
-```
-file                       original       bainite        upx       winner
-hello       (124 KiB)        121 KiB     70 KiB       57 KiB    upx     -13 KiB
-real-app    (3.6 MiB)      3 690 KiB  1 292 KiB    1 235 KiB    upx     -57 KiB
-ntoskrnl   (10.4 MiB)     10 614 KiB  4 339 KiB         FAIL    bainite (UPX cannot)
-nvidia-pcc (25.1 MiB)     25 740 KiB  5 557 KiB    5 845 KiB    bainite +289 KiB
-```
-
-bainite wins on large binaries and packs native-subsystem images that UPX
-rejects. Stub is **16 KiB** — overhead disappears on files of 5 MiB and up.
-
-`bainite.exe` and `bainited.exe` in this repo are themselves packed by bainite:
+## results
 
 ```
-bainite.exe   1.38 MiB → 510 KiB  (-64%)
-bainited.exe  3.40 MiB → 1.20 MiB (-65%)
+bainite.exe       1.38 MiB  →    510 KiB     (-64%)
+bainited.exe      3.40 MiB  →   1.20 MiB     (-65%)
+real-world app    3.60 MiB  →   1.26 MiB     (-65%)
+large native exe 25.10 MiB  →   5.43 MiB     (-78%)
 ```
 
-## install
+`bainite.exe` and `bainited.exe` in this release are themselves packed by
+bainite.
 
-Grab the latest from [**Releases**](../../releases/latest):
+## download
+
+Latest binaries: **[Releases](../../releases/latest)**.
 
 | file                  | size     | what                          |
 | --------------------- | -------: | ----------------------------- |
@@ -55,10 +58,10 @@ Drop `bainite.exe` somewhere on `PATH`.
 ```sh
 bainite pack  app.exe              # writes app.bainite.exe
 bainite info  app.bainite.exe      # shows metadata
-bainite bench app.exe              # compares zstd vs lzma2
+bainite bench app.exe              # ratio table for the available algorithms
 ```
 
-Defaults: `--level ultra --algo lzma2 --filter bcj` — what produced the table above.
+Defaults: `--level ultra --algo lzma2 --filter bcj`.
 
 ## cli
 
@@ -74,32 +77,35 @@ bainite info  <input> [--json]
 bainite bench <input> [--level <N>]
 ```
 
-| option       | default | what                                                |
-| ------------ | :-----: | --------------------------------------------------- |
-| `--level`    | `ultra` | preset for the chosen algorithm                     |
-| `--algo`     | `lzma2` | `auto` benchmarks Zstd vs LZMA2 and picks the best  |
-| `--filter`   | `bcj`   | x86 preprocessor: `bcj` (classic) or `bcj2` (split) |
-| `--encrypt`  | off     | apply ChaCha20 over the compressed payload          |
-| `--stub`     | embedded| path to a custom stub PE                            |
+| option       | default | description                                          |
+| ------------ | :-----: | ---------------------------------------------------- |
+| `--level`    | `ultra` | preset for the chosen algorithm                      |
+| `--algo`     | `lzma2` | `auto` benchmarks Zstd and LZMA2 and picks the best  |
+| `--filter`   | `bcj`   | x86 preprocessor: `bcj` (classic) or `bcj2` (split)  |
+| `--encrypt`  | off     | apply ChaCha20 over the compressed payload           |
+| `--stub`     | embedded| path to a custom stub PE                             |
 
 ### examples
 
 ```sh
 bainite pack app.exe                                 # default lzma2 + bcj + ultra
 bainite pack app.exe --level fast                    # quick CI pass
-bainite pack app.exe --algo auto --filter bcj2       # let engine pick
+bainite pack app.exe --algo auto --filter bcj2       # let the engine pick
 bainite pack app.exe --encrypt                       # opaque payload
 bainite info app.bainite.exe --json                  # machine-readable
 bainite bench big.exe --level 22                     # head-to-head
 ```
 
-## daemon (REST + gRPC)
+## daemon
+
+Run the engine over the network — useful for CI, packaging pipelines, or
+languages that don't link the FFI.
 
 ```sh
 bainited --bind 127.0.0.1:7575 --grpc-bind 127.0.0.1:7576 --token SECRET
 ```
 
-By default `bainited` binds to `127.0.0.1` and refuses non-loopback hosts
+`bainited` binds to `127.0.0.1` by default and refuses non-loopback hosts
 without `--token`.
 
 REST endpoints:
@@ -148,35 +154,25 @@ Works from Go (cgo), Python (ctypes), C#/.NET, Java (JNA), Node.js (ffi-napi).
 
 ## how it works
 
-**At pack time:**
+```
+1.  parse PE                  →  sections, imports, relocs, OEP, image base
+2.  apply BCJ x86             →  relative call/jmp → absolute targets
+3.  compress with LZMA2 e9    →  preset 9 + extreme (nice_len 273, depth 999)
+4.  optional ChaCha20         →  scramble the payload
+5.  emit container            →  192-byte header + manifest + payload
+6.  graft into stub PE        →  new ".bainite" section of the stub
+```
 
-1. Parse the PE — sections, imports, relocations, OEP, image base
-2. Apply BCJ x86 — convert relative `call`/`jmp` to absolute targets
-3. Compress with LZMA2 preset 9 + extreme (`nice_len=273`, `depth=999`)
-4. Optionally encrypt the payload with ChaCha20
-5. Emit a 192-byte header + manifest + payload
-6. Graft the result into a new `.bainite` section of the stub PE
-
-**At run time:**
-
-1. Locate `.bainite` in the running image
-2. Decompress LZMA2 in memory, reverse BCJ
-3. `VirtualAlloc` at the preferred image base
-4. Copy sections by virtual address
-5. Apply relocations if the base shifted
-6. Resolve imports via `LoadLibraryA` + `GetProcAddress`
-7. `VirtualProtect` per-section X/W/R flags
-8. Invoke TLS callbacks with `DLL_PROCESS_ATTACH`
-9. `FlushInstructionCache`, jump to the original entry point
-
-Disk is untouched after launch.
+At launch the embedded stub locates `.bainite`, restores the image in memory
+and jumps to the original entry point. Disk is untouched after the first
+read.
 
 ## supported targets
 
-| target                | pack | stub        | status   |
-| --------------------- | :--: | ----------- | -------- |
-| Windows PE x86_64     | yes  | in-memory   | active   |
-| Windows PE i686       | yes  | in-memory   | active   |
+| target                | status   |
+| --------------------- | -------- |
+| Windows PE x86_64     | active   |
+| Windows PE i686       | active   |
 
 ## roadmap
 
