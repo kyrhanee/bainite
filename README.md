@@ -19,9 +19,9 @@ single self-running binary with a small runtime stub.
   cores, typically 2–3× faster than single-threaded.
 - **Overlay strip.** Removes signature/cert/padding bytes appended after the
   last PE section before compression — small extra win on signed binaries.
-- **In-memory runtime.** The packed binary maps the original image directly
-  into the current process — sections, relocations, imports, page protections,
-  TLS callbacks, jump to OEP. No temp files, no `CreateProcess`.
+- **Wide compatibility.** The runtime stub decompresses the original image
+  and launches it with the parent's command line — works on every PE that
+  runs natively, including complex programs (Node.js, Electron, V8-based apps).
 - **Tamper-evident.** BLAKE3 of the payload and of the original image is
   verified at every launch.
 - **Three integration modes.** Command-line tool, REST + gRPC daemon, C ABI
@@ -153,8 +153,9 @@ Works from Go (cgo), Python (ctypes), C#/.NET, Java (JNA), Node.js (ffi-napi).
 ```
 
 At launch the embedded stub locates `.bainite`, verifies BLAKE3, decompresses
-in memory, restores the image and jumps to the original entry point. Disk is
-untouched after the first read.
+the original image in memory, writes it to a temporary file, spawns it via
+`CreateProcess` with the parent's command line, waits for completion, then
+deletes the temp file. The parent exits with the child's exit code.
 
 ## supported targets
 
