@@ -25,13 +25,13 @@ single self-running binary with a small runtime stub.
 ## results
 
 ```
-bainite.exe       1.38 MiB  →   541 KiB     (-61%)
-bainited.exe      3.40 MiB  →  1.26 MiB     (-64%)
-real-world app    3.60 MiB  →  1.26 MiB     (-65%)
-large native exe 25.10 MiB  →  5.43 MiB     (-78%)
+small Rust exe    121 KiB  →   114 KiB     (lots of stub overhead on tiny files)
+real-world app    3.60 MiB  →  1.26 MiB    (-65%)
+large native exe 25.10 MiB  →  5.43 MiB    (-78%)
 ```
 
-`bainite.exe` and `bainited.exe` in the release are themselves packed by bainite.
+Overhead from the embedded runtime makes a difference only on very small
+binaries; on anything ≥ 5 MiB it disappears.
 
 ## download
 
@@ -39,8 +39,8 @@ Latest binaries: **[Releases](../../releases/latest)**.
 
 | file                  | size     | what                          |
 | --------------------- | -------: | ----------------------------- |
-| `bainite.exe`         | 541 KiB  | command-line packer           |
-| `bainited.exe`        | 1.26 MiB | REST + gRPC daemon            |
+| `bainite.exe`         | 1.35 MiB | command-line packer           |
+| `bainited.exe`        | 3.44 MiB | REST + gRPC daemon            |
 | `bainite_native.dll`  | 760 KiB  | C ABI shared library          |
 | `bainite.h`           |   2 KiB  | C header                      |
 
