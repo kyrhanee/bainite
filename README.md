@@ -39,7 +39,7 @@ bainited.exe  3.40 MiB → 1.20 MiB (-65%)
 
 ## install
 
-Download from the repo root (or [releases](../../releases/latest)):
+Grab the latest from [**Releases**](../../releases/latest):
 
 | file                  | size     | what                          |
 | --------------------- | -------: | ----------------------------- |
