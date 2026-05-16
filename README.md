@@ -13,7 +13,12 @@ single self-running binary with a small runtime stub.
 ## what you get
 
 - **Heavy compression.** LZMA2 preset 9 with `nice_len=273` and `depth=999`,
-  combined with a BCJ x86 preprocessor.
+  combined with a BCJ x86 preprocessor and adaptive dictionary sizing
+  (16 / 64 / 128 MiB depending on input size).
+- **Parallel compression.** Multi-threaded LZMA2 on files ≥ 1 MiB — uses all
+  cores, typically 2–3× faster than single-threaded.
+- **Overlay strip.** Removes signature/cert/padding bytes appended after the
+  last PE section before compression — small extra win on signed binaries.
 - **In-memory runtime.** The packed binary maps the original image directly
   into the current process — sections, relocations, imports, page protections,
   TLS callbacks, jump to OEP. No temp files, no `CreateProcess`.
@@ -39,9 +44,9 @@ Latest binaries: **[Releases](../../releases/latest)**.
 
 | file                  | size     | what                          |
 | --------------------- | -------: | ----------------------------- |
-| `bainite.exe`         | 1.35 MiB | command-line packer           |
-| `bainited.exe`        | 3.44 MiB | REST + gRPC daemon            |
-| `bainite_native.dll`  | 760 KiB  | C ABI shared library          |
+| `bainite.exe`         | 1.41 MiB | command-line packer           |
+| `bainited.exe`        | 3.49 MiB | REST + gRPC daemon            |
+| `bainite_native.dll`  | 870 KiB  | C ABI shared library          |
 | `bainite.h`           |   2 KiB  | C header                      |
 
 Drop `bainite.exe` somewhere on `PATH`.
