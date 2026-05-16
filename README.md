@@ -1,13 +1,17 @@
-<div align="center">
-<pre>
+```
    __          _       _ __
   / /_  ____ _(_)___  (_) /____
  / __ \/ __ `/ / __ \/ / __/ _ \
 / /_/ / /_/ / / / / / / /_/  __/
 /_.___/\__,_/_/_/ /_/_/\__/\___/
-</pre>
+```
 
-### a one-way executable packer for Windows PE
+# a one-way executable packer for Windows PE
+
+[![License](https://img.shields.io/badge/license-MIT_%2F_Apache--2.0-blue?style=flat-square)](#license)
+[![Platform](https://img.shields.io/badge/platform-windows-lightgrey?style=flat-square)](#supported-targets)
+[![Engine](https://img.shields.io/badge/engine-LZMA2_extreme-red?style=flat-square)](#how-it-works)
+[![Stub](https://img.shields.io/badge/stub-16_KiB-green?style=flat-square)](#how-it-works)
 
 [![License](https://img.shields.io/badge/license-MIT_%2F_Apache--2.0-blue?style=flat-square)](#license)
 [![Platform](https://img.shields.io/badge/platform-windows-lightgrey?style=flat-square)](#supported-targets)
