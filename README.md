@@ -1,17 +1,16 @@
 # Bainite
 
 ```
-██████╗   █████╗  ██╗ ███╗   ██╗ ██╗ ████████╗ ███████╗
-██╔══██╗ ██╔══██╗ ██║ ████╗  ██║ ██║ ╚══██╔══╝ ██╔════╝
-██████╔╝ ███████║ ██║ ██╔██╗ ██║ ██║    ██║    █████╗
-██╔══██╗ ██╔══██║ ██║ ██║╚██╗██║ ██║    ██║    ██╔══╝
-██████╔╝ ██║  ██║ ██║ ██║ ╚████║ ██║    ██║    ███████╗
-╚═════╝  ╚═╝  ╚═╝ ╚═╝ ╚═╝  ╚═══╝ ╚═╝    ╚═╝    ╚══════╝
+   __          _       _ __
+  / /_  ____ _(_)___  (_) /____
+ / __ \/ __ `/ / __ \/ / __/ _ \
+/ /_/ / /_/ / / / / / / /_/  __/
+/_.___/\__,_/_/_/ /_/_/\__/\___/
 ```
 
 ![Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0-blue)
-![Platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 ![Compression](https://img.shields.io/badge/compression-up%20to%2078%25-red)
 
 A modern Windows `.exe` packer. Compresses executables with LZMA2 at extreme
